@@ -5,7 +5,7 @@
 # Usage:
 #   1. Place your custom config files next to this script (see REQUIRED FILES).
 #   2. Place your ROM file next to this script and set ROM_FILENAME below.
-#   3. Run
+#   3. Run:  bash deploy.sh
 #
 # On subsequent runs the script will pull the latest repo changes and
 # re-apply all custom config(s).
@@ -143,6 +143,40 @@ if ! grep -q "example_" "$COMPOSE_FILE"; then
     echo "  ✓ docker-compose: removed all 'example_' prefixes from volume mounts"
 else
     echo "  ⚠ WARNING: Some 'example_' entries may remain — check $COMPOSE_FILE manually."
+fi
+
+# --- 5c. docker-compose.yml: inject ROM volume mount -----------------------
+# The ROM must be explicitly mounted into the container — copying it to the
+# repo root is not enough. We add it to the volumes: block of the app service.
+# The container path /archipelago/<rom> matches where Archipelago expects it.
+ROM_HOST_PATH="../${ROM_FILENAME}"   # relative to deploy/, points to repo root
+ROM_CONTAINER_PATH="/archipelago/${ROM_FILENAME}"
+ROM_VOLUME_LINE="      - ${ROM_HOST_PATH}:${ROM_CONTAINER_PATH}:ro"
+
+if grep -qF "$ROM_CONTAINER_PATH" "$COMPOSE_FILE"; then
+    echo "  ✓ docker-compose: ROM volume already present, skipping."
+else
+    # Insert the ROM mount after the last existing volume entry (lines starting with "      - ")
+    # This uses awk to append after the final volume line in the file
+    awk -v rom_line="$ROM_VOLUME_LINE" '
+        /^      - / { last_vol = NR; lines[NR] = $0; next }
+        { lines[NR] = $0 }
+        END {
+            for (i = 1; i <= NR; i++) {
+                print lines[i]
+                if (i == last_vol) print rom_line
+            }
+        }
+    ' "$COMPOSE_FILE" > "${COMPOSE_FILE}.tmp" && mv "${COMPOSE_FILE}.tmp" "$COMPOSE_FILE"
+
+    if grep -qF "$ROM_CONTAINER_PATH" "$COMPOSE_FILE"; then
+        echo "  ✓ docker-compose: ROM volume mount injected"
+        echo "      ${ROM_HOST_PATH} → ${ROM_CONTAINER_PATH}"
+    else
+        echo "  ⚠ WARNING: Could not inject ROM volume — add this manually to $COMPOSE_FILE:"
+        echo "      volumes:"
+        echo "        $ROM_VOLUME_LINE"
+    fi
 fi
 
 # --- 5b. customserver.py: patch get_random_port() range to 50000–50002 ------
