@@ -148,10 +148,10 @@ fi
 # --- 5c. docker-compose.yml: inject ROM volume mount -----------------------
 # The ROM must be explicitly mounted into the container — copying it to the
 # repo root is not enough. We add it to the volumes: block of the app service.
-# The container path /archipelago/<rom> matches where Archipelago expects it.
+# The container path /app/<rom> matches where Archipelago expects it.
 ROM_HOST_PATH="../${ROM_FILENAME}"   # relative to deploy/, points to repo root
-ROM_CONTAINER_PATH="/archipelago/${ROM_FILENAME}"
-ROM_VOLUME_LINE="      - ${ROM_HOST_PATH}:${ROM_CONTAINER_PATH}:ro"
+ROM_CONTAINER_PATH="/app/${ROM_FILENAME}"
+ROM_VOLUME_LINE="      - ${ROM_HOST_PATH}:${ROM_CONTAINER_PATH}"
 
 if grep -qF "$ROM_CONTAINER_PATH" "$COMPOSE_FILE"; then
     echo "  ✓ docker-compose: ROM volume already present, skipping."
