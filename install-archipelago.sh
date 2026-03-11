@@ -156,10 +156,15 @@ ROM_VOLUME_LINE="      - ${ROM_HOST_PATH}:${ROM_CONTAINER_PATH}:ro"
 if grep -qF "$ROM_CONTAINER_PATH" "$COMPOSE_FILE"; then
     echo "  ✓ docker-compose: ROM volume already present, skipping."
 else
-    # Insert the ROM mount after the last existing volume entry (lines starting with "      - ")
-    # This uses awk to append after the final volume line in the file
+    # Insert the ROM mount into the multiworld service volumes block,
+    # after the last existing volume entry under that service specifically.
+    # We track when we're inside the multiworld: service and find its
+    # volumes: block, then append after the last "      - " line in it.
     awk -v rom_line="$ROM_VOLUME_LINE" '
-        /^      - / { last_vol = NR; lines[NR] = $0; next }
+        /^  multiworld:/ { in_multiworld = 1 }
+        /^  [a-z]/ && !/^  multiworld:/ { in_multiworld = 0 }
+        in_multiworld && /^    volumes:/ { in_volumes = 1 }
+        in_multiworld && in_volumes && /^      - / { last_vol = NR }
         { lines[NR] = $0 }
         END {
             for (i = 1; i <= NR; i++) {
@@ -170,11 +175,10 @@ else
     ' "$COMPOSE_FILE" > "${COMPOSE_FILE}.tmp" && mv "${COMPOSE_FILE}.tmp" "$COMPOSE_FILE"
 
     if grep -qF "$ROM_CONTAINER_PATH" "$COMPOSE_FILE"; then
-        echo "  ✓ docker-compose: ROM volume mount injected"
+        echo "  ✓ docker-compose: ROM volume mount injected into multiworld service"
         echo "      ${ROM_HOST_PATH} → ${ROM_CONTAINER_PATH}"
     else
-        echo "  ⚠ WARNING: Could not inject ROM volume — add this manually to $COMPOSE_FILE:"
-        echo "      volumes:"
+        echo "  ⚠ WARNING: Could not inject ROM volume — add this manually under multiworld.volumes in $COMPOSE_FILE:"
         echo "        $ROM_VOLUME_LINE"
     fi
 fi
