@@ -1,0 +1,49 @@
+{% extends 'pageWrapper.html' %}
+{% set show_footer = True %}
+
+{% block head %}
+    <title>Archipelago</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename="styles/landing.css") }}" />
+{% endblock %}
+
+{% block body %}
+    {% include 'header/oceanIslandHeader.html' %}
+    <div id="landing-wrapper">
+        <div id="landing-header">
+            <img id="landing-logo" src="static/static/branding/landing-logo.png" alt="Archipelago Logo" />
+            <h4>multiworld multi-game randomizer</h4>
+        </div>
+        <div id="landing-links">
+            <a href="/games" id="far-left-button">Supported<br />Games</a>
+            <a href="/tutorial" id="mid-left-button">Setup Guides</a>
+            <a href="/start-playing" id="mid-button">Start<br />Playing</a>
+            <a href="/faq/en/" id="mid-right-button">F.A.Q.</a>
+        </div>
+        <div id="landing-clouds">
+            <img id="cloud1" src="/static/static/backgrounds/clouds/cloud-0001.png"/>
+            <img id="cloud2" src="/static/static/backgrounds/clouds/cloud-0002.png"/>
+            <img id="cloud3" src="/static/static/backgrounds/clouds/cloud-0003.png"/>
+        </div>
+        <div id="landing-decorations">
+            <img id="landing-deco-1" class="landing-deco deco-island" src="/static/static/decorations/island-b.png" />
+            <img id="landing-deco-2" class="landing-deco deco-island" src="/static/static/decorations/island-c.png" />
+            <img id="landing-deco-3" class="landing-deco deco-rock" src="/static/static/decorations/rock-in-water.png" />
+            <img id="landing-deco-4" class="landing-deco deco-rock" src="/static/static/decorations/rock-in-water.png" />
+            <img id="landing-deco-5" class="landing-deco deco-rock" src="/static/static/decorations/rock-in-water.png" />
+            <img id="landing-deco-6" class="landing-deco deco-rock" src="/static/static/decorations/rock-in-water.png" />
+        </div>
+        <div id="landing" class="grass-island">
+            <div id="landing-body">
+                <p id="first-line">Welcome to Archipelago ontrexdex.com!</p>
+                <img src="/static/static/hoponrando.jpg" alt="">
+                
+                <p>
+                    <a href="{{ url_for("stats") }}">{{ seeds }}</a>
+                    games were generated and
+                    <a href="{{ url_for("stats") }}">{{ rooms }}</a>
+                    were hosted in the last 7 days.
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
