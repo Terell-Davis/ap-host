@@ -34,7 +34,7 @@ cd "$DEPLOY_DIR"
 # ── Helper: print usage ──────────────────────────────────────────────────────
 usage() {
     echo ""
-    echo "Usage: bash archipelago.sh [command]"
+    echo "Usage: bash ap-cmd.sh [command]"
     echo ""
     echo "Commands:"
     echo "  start    Start containers (no rebuild)"
