@@ -4,12 +4,12 @@ ROM_FILENAME="Zelda no Densetsu - Kamigami no Triforce (Japan).sfc"
 REPO_URL="https://github.com/ArchipelagoMW/Archipelago.git"
 CLONE_DIR="archipelago"
 HOST_PORT="8181"     # docker external port
+ROOMPORT_START="40000"
+ROOMPORT_END="40002"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$SCRIPT_DIR/$CLONE_DIR"
 DEPLOY_DIR="$REPO_DIR/deploy"
-
-echo " Docker Deploy"
 
 REQUIRED_FILES=("config.yaml" "selflaunch.yaml" "gunicorn.conf.py" "nginx.conf" "$ROM_FILENAME")
 
@@ -133,10 +133,10 @@ if [[ ! -f "$CUSTOMSERVER" ]]; then
 else
     # Targets the exact line inside get_random_port():
     #   return random.randint(49152, 65535)
-    sed -i 's/\(def get_random_port.*\)/\1/;/def get_random_port/,/^def /{s/random\.randint(49152, 65535)/random.randint(50000, 50002)/g}' "$CUSTOMSERVER"
+    sed -i "s/\(def get_random_port.*\)/\1/;/def get_random_port/,/^def /{s/random\.randint(49152, 65535)/random.randint($ROOMPORT_START, $ROOMPORT_END)/g}" "$CUSTOMSERVER"
 
-    if grep -q "50000, 50002" "$CUSTOMSERVER"; then
-        echo "customserver.py: get_random_port() range set to 50000–50002"
+    if grep -q "$ROOMPORT_START, $ROOMPORT_END" "$CUSTOMSERVER"; then
+        echo "customserver.py: get_random_port() range set to $ROOMPORT_START-$ROOMPORT_END"
     else
         echo "Failed: Could not verify customserver.py patch — check $CUSTOMSERVER manually."
     fi
